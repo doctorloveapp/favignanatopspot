@@ -581,7 +581,7 @@ flutter pub upgrade
 
 ## 📄 Licenza
 
-Copyright © 2024 Favignana Top Spot. Tutti i diritti riservati.
+Copyright © 2025 Favignana Top Spot. Tutti i diritti riservati.
 
 ---
 
