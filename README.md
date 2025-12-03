@@ -211,15 +211,18 @@ else             → YELLOW  // Laterale
 
 #### Esempio Pratico
 
-**Scenario**: Vento da NE (45°) a 20 km/h
+**Scenario**: Vento Grecale (NE, 45°) a 20 km/h
 
-| Spiaggia | Esposizione | Δ Angolo | Stato |
-|----------|-------------|----------|-------|
-| Cala Rossa | N (0°) | 45° | 🔴 Mosso |
-| Bue Marino | NE (45°) | 0° | 🔴 Mosso |
-| Lido Burrone | S (180°) | 135° | 🟢 Calmo |
-| Cala Azzurra | SE (135°) | 90° | 🟡 Accettabile |
-| Cala Rotonda | W (270°) | 135° | 🟢 Calmo |
+| Spiaggia | Esposizione | Δ Angolo | Stato | Motivo |
+|----------|-------------|----------|-------|--------|
+| Cala Rossa | NE (45°) | 0° | 🔴 Mosso | Vento frontale |
+| Bue Marino | E (90°) | 45° | 🔴 Mosso | Vento quasi frontale |
+| Cala Azzurra | SE (135°) | 90° | 🟡 Accettabile | Vento laterale |
+| Lido Burrone | S (180°) | 135° | 🟢 Calmo | Vento offshore |
+| Cala Preveto | S (180°) | 135° | 🟢 Calmo | Vento offshore |
+| Cala Rotonda | W (270°) | 135° | 🟢 Calmo | Vento offshore |
+| Cala Grande | W (270°) | 135° | 🟢 Calmo | Vento offshore |
+| Spiaggia Praia | N (0°) | 45° | 🔴 Mosso | Vento quasi frontale |
 
 ---
 
@@ -238,36 +241,104 @@ class Beach {
 }
 ```
 
-### Spiagge Configurate
+### Spiagge Configurate (12 Spot)
 
-| # | Nome | Coordinate | Esposizione | Venti Sfavorevoli |
-|---|------|------------|-------------|-------------------|
-| 1 | **Cala Rossa** | 37.9388, 12.3592 | N | Tramontana, Grecale |
-| 2 | **Bue Marino** | 37.9350, 12.3650 | NE | Tramontana, Grecale, Levante |
-| 3 | **Lido Burrone** | 37.9150, 12.3450 | S | Scirocco, Libeccio |
-| 4 | **Cala Azzurra** | 37.9180, 12.3700 | SE | Scirocco, Ostro |
-| 5 | **Cala Rotonda** | 37.9250, 12.3100 | W | Ponente, Maestrale |
+#### 🧭 Legenda Venti Italiani
+| Vento | Direzione | Gradi |
+|-------|-----------|-------|
+| Tramontana | N | 0° |
+| Grecale | NE | 45° |
+| Levante | E | 90° |
+| Scirocco | SE | 135° |
+| Mezzogiorno/Ostro | S | 180° |
+| Libeccio | SW | 225° |
+| Ponente | W | 270° |
+| Maestrale | NW | 315° |
+
+#### Costa Nord-Est
+| # | Nome | Coordinate GPS | Esposizione | Venti Sfavorevoli |
+|---|------|----------------|-------------|-------------------|
+| 1 | **Cala Rossa** | 37.9262, 12.3592 | NE | Maestrale, Tramontana, Grecale |
+| 2 | **Cala San Nicola** | 37.9338, 12.3497 | NE | Tramontana, Grecale, Maestrale |
+| 3 | **Scalo Cavallo** | 37.9375, 12.3483 | NE | Tramontana, Grecale, Maestrale |
+
+#### Costa Est
+| # | Nome | Coordinate GPS | Esposizione | Venti Sfavorevoli |
+|---|------|----------------|-------------|-------------------|
+| 4 | **Bue Marino** | 37.9203, 12.3615 | E | Levante, Grecale, Scirocco* |
+
+*Nota: Con Scirocco mare leggermente mosso, impraticabile con Levante/Grecale.
+
+#### Costa Sud-Est
+| # | Nome | Coordinate GPS | Esposizione | Venti Sfavorevoli |
+|---|------|----------------|-------------|-------------------|
+| 5 | **Cala Azzurra** | 37.9109, 12.3335 | SE | Scirocco, Levante |
+
+#### Costa Sud
+| # | Nome | Coordinate GPS | Esposizione | Venti Sfavorevoli |
+|---|------|----------------|-------------|-------------------|
+| 6 | **Lido Burrone** | 37.9155, 12.3297 | S | Scirocco, Mezzogiorno, Libeccio |
+| 7 | **Cala Preveto** | 37.9158, 12.2982 | S | Scirocco, Mezzogiorno, Libeccio |
+
+#### Costa Ovest
+| # | Nome | Coordinate GPS | Esposizione | Venti Sfavorevoli |
+|---|------|----------------|-------------|-------------------|
+| 8 | **Cala Rotonda** | 37.9213, 12.2878 | W | Maestrale, Ponente, Libeccio |
+| 9 | **Cala Grande** | 37.9250, 12.2800 | W | Maestrale, Ponente |
+
+#### Costa Nord-Ovest
+| # | Nome | Coordinate GPS | Esposizione | Venti Sfavorevoli |
+|---|------|----------------|-------------|-------------------|
+| 10 | **Cala Faraglioni** | 37.9463, 12.3160 | NW | Maestrale, Ponente, Tramontana |
+| 11 | **Cala del Pozzo** | 37.9402, 12.2905 | NW | Maestrale, Ponente |
+
+#### Costa Nord (Centro)
+| # | Nome | Coordinate GPS | Esposizione | Venti Sfavorevoli |
+|---|------|----------------|-------------|-------------------|
+| 12 | **Spiaggia Praia** | 37.9315, 12.3268 | N | Tramontana, Grecale |
+
+### Regola Generale per la Scelta
+
+> **"Se il vento soffia da una direzione, cerca una spiaggia sulla costa opposta dell'isola."**
+
+| Condizione Vento | Direzione | Coste Consigliate | Spiagge Suggerite |
+|------------------|-----------|-------------------|-------------------|
+| Tramontana/Maestrale/Grecale | N/NW/NE | Sud, Sud-Est | Lido Burrone, Cala Azzurra, Cala Preveto |
+| Mezzogiorno/Scirocco/Libeccio | S/SE/SW | Nord, Nord-Ovest | Cala Rossa, Scalo Cavallo, Spiaggia Praia, Cala Faraglioni |
+| Ponente | W | Est | Bue Marino, Cala Azzurra (lato est) |
+| Levante | E | Ovest | Cala Rotonda, Cala Grande |
 
 ### Mappa Geografica
 
 ```
-                    N
-                    ↑
-        ┌───────────┴───────────┐
-        │                       │
-        │    ① Cala Rossa      │
-        │        (N)            │
-   W ←──│  ⑤                ②  │──→ E
-        │ Cala               Bue│
-        │Rotonda            Marino
-        │  (W)               (NE)│
-        │                       │
-        │   ③ Lido    ④ Cala   │
-        │   Burrone   Azzurra  │
-        │     (S)       (SE)    │
-        └───────────────────────┘
-                    ↓
-                    S
+                         N (Tramontana)
+                            ↑
+            ┌───────────────┴───────────────┐
+            │      ⑩ Cala Faraglioni       │
+            │           (NW)                │
+            │                               │
+            │  ⑪ Cala      ⑫ Spiaggia     │
+   (Ponente)│  del Pozzo      Praia        │ (Grecale)
+     W ←────│    (NW)          (N)         │────→ NE
+            │                               │
+            │         ② Cala San Nicola    │
+            │  ⑨ Cala          (NE)        │
+            │  Grande    ③ Scalo Cavallo   │
+            │   (W)           (NE)          │
+            │                               │
+            │  ⑧ Cala    ① Cala Rossa     │
+            │  Rotonda        (NE)          │
+            │   (W)                         │ (Levante)
+     W ←────│                  ④ Bue Marino│────→ E
+            │  ⑦ Cala           (E)        │
+            │  Preveto                      │
+            │   (S)      ⑤ Cala Azzurra    │
+            │                 (SE)          │
+            │       ⑥ Lido Burrone         │
+            │            (S)                │
+            └───────────────┬───────────────┘
+                            ↓
+                     S (Mezzogiorno)
 ```
 
 ### Aggiungere una Nuova Spiaggia
