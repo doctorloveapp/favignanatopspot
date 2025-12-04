@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/beach.dart';
 import '../models/ad.dart';
@@ -16,7 +17,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   final WeatherService _weatherService = WeatherService();
   final AdService _adService = AdService();
 
@@ -31,16 +32,45 @@ class _HomeScreenState extends State<HomeScreen> {
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _listKey = GlobalKey();
 
+  // Timer per auto-refresh ogni 30 minuti
+  Timer? _refreshTimer;
+  static const Duration _refreshInterval = Duration(minutes: 30);
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadData();
+    _startAutoRefresh();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _refreshTimer?.cancel();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  /// Gestisce il lifecycle dell'app (pausa/resume)
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // App tornata in foreground: ricarica dati e riavvia timer
+      _loadData();
+      _startAutoRefresh();
+    } else if (state == AppLifecycleState.paused) {
+      // App in background: ferma timer per risparmiare batteria
+      _refreshTimer?.cancel();
+    }
+  }
+
+  /// Avvia il timer di auto-refresh ogni 30 minuti
+  void _startAutoRefresh() {
+    _refreshTimer?.cancel();
+    _refreshTimer = Timer.periodic(_refreshInterval, (_) {
+      _loadData();
+    });
   }
 
   Future<void> _loadData() async {
@@ -112,7 +142,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(translations.appTitle),
+        title: Text(
+          translations.appTitle,
+          style: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.5,
+          ),
+        ),
         centerTitle: true,
         elevation: 0,
         actions: [

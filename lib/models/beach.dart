@@ -91,14 +91,14 @@ class Beach {
       // ═══════════════════════════════════════════════════════════════
       // Cala Azzurra: conca molto pronunciata, ben difesa dai venti
       // di Nord, Nord-Ovest e Ovest. Esposta solo a Sud e Sud-Est.
-      // shelterBonus: +30° di tolleranza extra per venti laterali
+      // shelterBonus: +60° di tolleranza extra (Maestrale/Ponente = VERDE)
       Beach(
         name: "Cala Azzurra",
         lat: 37.908715,
         lon: 12.361280,
         exposure: "S",
         badWinds: ["S", "SE"], // Solo venti frontali diretti
-        shelterBonus: 30, // Conca pronunciata: tolleranza aumentata
+        shelterBonus: 60, // Conca molto pronunciata: massima tolleranza
         mapX: 0.773,
         mapY: 0.783,
       ),

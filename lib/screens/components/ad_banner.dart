@@ -43,38 +43,27 @@ class AdBanner extends StatelessWidget {
       ),
     );
 
-    // Per il banner sticky, aggiungi una linea di separazione elegante
+    // Per il banner sticky, aggiungi una linea di separazione turchese
     if (isSticky) {
+      // Colore turchese
+      const turquoise = Color(0xFF00CED1); // Dark Turquoise
+
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Linea di separazione elegante
+          // Linea turchese sfumata ai lati
           Container(
-            height: 1,
+            height: 1.5,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
                   Colors.transparent,
-                  Colors.grey.shade300,
-                  Colors.grey.shade400,
-                  Colors.grey.shade300,
+                  turquoise.withValues(alpha: 0.5),
+                  turquoise,
+                  turquoise.withValues(alpha: 0.5),
                   Colors.transparent,
                 ],
-                stops: const [0.0, 0.2, 0.5, 0.8, 1.0],
-              ),
-            ),
-          ),
-          // Sottile ombra sopra il banner
-          Container(
-            height: 4,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.black.withOpacity(0.08),
-                  Colors.transparent,
-                ],
+                stops: const [0.0, 0.15, 0.5, 0.85, 1.0],
               ),
             ),
           ),
