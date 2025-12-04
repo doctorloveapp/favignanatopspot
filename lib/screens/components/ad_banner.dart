@@ -17,22 +17,21 @@ class AdBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    final bannerContent = GestureDetector(
       onTap: _launchURL,
       child: Container(
         margin: isSticky
             ? EdgeInsets.zero
             : const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
         width: double.infinity,
-        height: isSticky ? 60 : 200, // Approx ratio 6:1 vs 16:9 (roughly)
+        height: isSticky ? 72 : 200, // Altezza aumentata del 20% (60 → 72)
         decoration: BoxDecoration(
           color: Colors.grey[200],
           borderRadius: isSticky ? null : BorderRadius.circular(12),
         ),
         child: ClipRRect(
-          borderRadius: isSticky
-              ? BorderRadius.zero
-              : BorderRadius.circular(12),
+          borderRadius:
+              isSticky ? BorderRadius.zero : BorderRadius.circular(12),
           child: CachedNetworkImage(
             imageUrl: ad.imageUrl,
             fit: BoxFit.cover,
@@ -43,5 +42,47 @@ class AdBanner extends StatelessWidget {
         ),
       ),
     );
+
+    // Per il banner sticky, aggiungi una linea di separazione elegante
+    if (isSticky) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Linea di separazione elegante
+          Container(
+            height: 1,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.transparent,
+                  Colors.grey.shade300,
+                  Colors.grey.shade400,
+                  Colors.grey.shade300,
+                  Colors.transparent,
+                ],
+                stops: const [0.0, 0.2, 0.5, 0.8, 1.0],
+              ),
+            ),
+          ),
+          // Sottile ombra sopra il banner
+          Container(
+            height: 4,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withOpacity(0.08),
+                  Colors.transparent,
+                ],
+              ),
+            ),
+          ),
+          bannerContent,
+        ],
+      );
+    }
+
+    return bannerContent;
   }
 }

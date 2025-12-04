@@ -6,6 +6,15 @@ import '../models/beach.dart';
 /// - VERDE (Green): Calm sea - ideal conditions
 /// - GIALLO (Yellow): Acceptable - side winds
 /// - ROSSO (Red): Rough sea - frontal winds
+///
+/// Fasce di velocità vento:
+/// - < 5 km/h: Tutti gli spot VERDI (mare calmo assoluto)
+/// - 5-10 km/h: Solo VERDE o GIALLO (vento leggero, no rosso)
+/// - > 10 km/h: Valutazione completa VERDE/GIALLO/ROSSO
+///
+/// Protezione extra (shelterBonus):
+/// Alcune spiagge in conche pronunciate (es. Cala Azzurra) hanno
+/// protezione extra dai venti laterali grazie alla conformazione.
 class WindLogic {
   /// Calculate the beach status based on current wind conditions.
   ///
@@ -17,12 +26,12 @@ class WindLogic {
     double windDirectionDegrees,
     Beach beach,
   ) {
-    // Rule 1: If wind is weak (< 10 km/h), always GREEN (calm sea)
-    if (windSpeedKmH < 10) {
+    // Rule 1: If wind is very weak (< 5 km/h), always GREEN (calm sea)
+    if (windSpeedKmH < 5) {
       return BeachStatus.green;
     }
 
-    // Rule 2: For stronger winds, calculate based on angle difference
+    // Rule 2: For all winds >= 5 km/h, calculate based on angle difference
     // Beach exposure angle (where the beach faces)
     double beachAngle = _cardinalToDegrees(beach.exposure);
 
@@ -32,19 +41,36 @@ class WindLogic {
     double diff = (windDirectionDegrees - beachAngle).abs();
     if (diff > 180) diff = 360 - diff;
 
-    // Rule 2a: Frontal wind (within 45°) -> RED (rough sea)
-    // Wind coming from the direction the beach faces
-    if (diff <= 45) {
-      return BeachStatus.red;
-    }
+    // Apply shelter bonus for beaches in pronounced coves
+    // Cala Azzurra has +30° bonus, making offshore threshold 160° instead of 130°
+    final offshoreThreshold = 130 + beach.shelterBonus;
 
-    // Rule 2b: Offshore wind (from behind, 135°+) -> GREEN (calm sea)
+    // Rule 2a: Offshore wind (from behind) -> GREEN (calm sea)
     // Wind blowing from land towards sea
-    if (diff >= 135) {
+    // Base threshold 130°, plus shelterBonus for protected coves
+    if (diff >= offshoreThreshold) {
       return BeachStatus.green;
     }
 
-    // Rule 2c: Side wind (45° to 135°) -> YELLOW (acceptable)
+    // Rule 2b: Light wind (5-10 km/h) -> Only GREEN or YELLOW (no RED)
+    // Even frontal winds don't create significant waves at this speed
+    if (windSpeedKmH < 10) {
+      // Frontal or side winds with light breeze -> YELLOW (slightly choppy but safe)
+      return BeachStatus.yellow;
+    }
+
+    // Rule 3: For stronger winds (>= 10 km/h), full evaluation
+    // Apply shelter bonus to frontal threshold as well (more tolerance)
+    final frontalThreshold =
+        45 + (beach.shelterBonus ~/ 2); // Half bonus for frontal
+
+    // Rule 3a: Frontal wind (within threshold) -> RED (rough sea)
+    // Wind coming from the direction the beach faces
+    if (diff <= frontalThreshold) {
+      return BeachStatus.red;
+    }
+
+    // Rule 3b: Side wind -> YELLOW (acceptable)
     return BeachStatus.yellow;
   }
 

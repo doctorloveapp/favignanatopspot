@@ -1,92 +1,71 @@
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 import '../models/ad.dart';
 
 class AdService {
-  // Placeholder for remote JSON
-  // In a real app, this would be an http.get call
+  /// URL del file JSON di configurazione ads su Google Drive
+  /// Formato: { "banners": [ { id, clientName, type, imageUrl, linkUrl, timeSlots } ] }
+  static const String _adsConfigUrl =
+      'https://drive.google.com/uc?export=download&id=1pav7QBy4-EFbxP_Q_2h3W1jJq2Ra6T0Z';
+
+  /// Ads di fallback se il caricamento da remoto fallisce
+  static final List<Ad> _fallbackAds = [
+    Ad(
+      id: 'fallback_1',
+      clientName: 'Favignana Top Spot',
+      imageUrl: 'https://picsum.photos/600/100?random=1',
+      linkUrl: 'https://example.com',
+      type: 'STICKY_BOTTOM',
+      timeSlots: ['ALL_DAY'],
+    ),
+  ];
+
+  /// Carica le pubblicità dal file JSON remoto su Google Drive
+  /// Se il caricamento fallisce, restituisce gli ads di fallback
   Future<List<Ad>> fetchAds() async {
-    // Simulating network delay
-    await Future.delayed(const Duration(milliseconds: 500));
+    try {
+      final client = http.Client();
+      try {
+        final response = await client
+            .get(Uri.parse(_adsConfigUrl))
+            .timeout(const Duration(seconds: 15));
 
-    // Mock Data
-    // Note: In production, replace with actual API call:
-    // final response = await http.get(Uri.parse('YOUR_ADS_API_URL'));
-    // Ratio 6:1 for sticky banners (e.g., 600x100)
-    // Ratio 16:9 for native banners (e.g., 640x360)
-    final String jsonString = '''
-    [
-      {
-        "imageUrl": "https://picsum.photos/600/100?random=1", 
-        "linkUrl": "https://example.com/breakfast",
-        "type": "morning",
-        "position": "sticky"
-      },
-      {
-        "imageUrl": "https://picsum.photos/640/360?random=2",
-        "linkUrl": "https://example.com/breakfast-native",
-        "type": "morning",
-        "position": "native"
-      },
-      {
-        "imageUrl": "https://picsum.photos/600/100?random=3",
-        "linkUrl": "https://example.com/lunch",
-        "type": "lunch",
-        "position": "sticky"
-      },
-      {
-        "imageUrl": "https://picsum.photos/640/360?random=4",
-        "linkUrl": "https://example.com/lunch-native",
-        "type": "lunch",
-        "position": "native"
-      },
-      {
-        "imageUrl": "https://picsum.photos/600/100?random=5",
-        "linkUrl": "https://example.com/dinner",
-        "type": "dinner",
-        "position": "sticky"
-      },
-      {
-        "imageUrl": "https://picsum.photos/640/360?random=6",
-        "linkUrl": "https://example.com/dinner-native",
-        "type": "dinner",
-        "position": "native"
-      },
-      {
-        "imageUrl": "https://picsum.photos/600/100?random=7",
-        "linkUrl": "https://example.com/promo",
-        "type": "all",
-        "position": "sticky"
-      },
-      {
-        "imageUrl": "https://picsum.photos/640/360?random=8",
-        "linkUrl": "https://example.com/promo-native",
-        "type": "all",
-        "position": "native"
+        if (response.statusCode == 200) {
+          final body = response.body.trim();
+
+          // Nuovo formato: { "banners": [...] }
+          if (body.startsWith('{')) {
+            final Map<String, dynamic> jsonMap = json.decode(body);
+            if (jsonMap.containsKey('banners')) {
+              final List<dynamic> banners = jsonMap['banners'];
+              if (banners.isNotEmpty) {
+                return banners.map((b) => Ad.fromJson(b)).toList();
+              }
+            }
+          }
+          // Vecchio formato: array diretto [...]
+          else if (body.startsWith('[')) {
+            final List<dynamic> jsonList = json.decode(body);
+            if (jsonList.isNotEmpty) {
+              return jsonList.map((json) => Ad.fromJson(json)).toList();
+            }
+          }
+        }
+      } finally {
+        client.close();
       }
-    ]
-    ''';
 
-    final List<dynamic> jsonList = json.decode(jsonString);
-    return jsonList.map((json) => Ad.fromJson(json)).toList();
+      // Se arriviamo qui, usa fallback
+      return _fallbackAds;
+    } catch (e) {
+      // In caso di errore di rete o timeout, usa fallback
+      print('AdService error: $e');
+      return _fallbackAds;
+    }
   }
 
+  /// Filtra gli ads in base all'ora corrente
   List<Ad> filterAdsByTime(List<Ad> ads) {
-    final now = DateTime.now();
-    final hour = now.hour;
-    String currentType = 'morning';
-
-    if (hour >= 6 && hour < 11) {
-      currentType = 'morning';
-    } else if (hour >= 11 && hour < 15) {
-      currentType = 'lunch';
-    } else if (hour >= 19 && hour < 24) {
-      currentType = 'dinner';
-    } else {
-      currentType = 'all'; // Fallback or specific logic for afternoon/night
-    }
-
-    return ads
-        .where((ad) => ad.type == currentType || ad.type == 'all')
-        .toList();
+    return ads.where((ad) => ad.shouldShowNow()).toList();
   }
 }

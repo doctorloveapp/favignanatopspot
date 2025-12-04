@@ -172,12 +172,21 @@ Il `WindLogic` è il motore intelligente che determina lo stato del mare per ogn
 
 #### Regole di Business
 
-| Condizione | Angolo Δ | Stato | Colore | Significato |
-|------------|----------|-------|--------|-------------|
-| Vento < 10 km/h | - | `green` | 🟢 | Mare sempre calmo |
-| Vento frontale | 0° - 45° | `red` | 🔴 | Mare mosso, onde dirette |
-| Vento laterale | 45° - 135° | `yellow` | 🟡 | Condizioni accettabili |
-| Vento offshore | 135° - 180° | `green` | 🟢 | Mare calmo, vento da terra |
+| Velocità Vento | Angolo Δ | Stato | Colore | Significato |
+|----------------|----------|-------|--------|-------------|
+| < 5 km/h | Qualsiasi | `green` | 🟢 | Mare sempre calmo (cut-off assoluto) |
+| 5-10 km/h | 130°-180° | `green` | 🟢 | Vento offshore, mare calmo |
+| 5-10 km/h | 0°-130° | `yellow` | 🟡 | Brezza leggera, leggermente mosso ma sicuro |
+| ≥ 10 km/h | 0°-45° | `red` | 🔴 | Vento frontale, mare mosso |
+| ≥ 10 km/h | 45°-130° | `yellow` | 🟡 | Vento laterale, condizioni accettabili |
+| ≥ 10 km/h | 130°-180° | `green` | 🟢 | Vento offshore, mare calmo |
+
+> **Fasce di velocità vento:**
+> - **< 5 km/h**: Tutti gli spot sono **VERDI** (mare calmo assoluto, brezza impercettibile)
+> - **5-10 km/h**: Solo **VERDE** o **GIALLO** (vento leggero, nessuno spot rosso anche se frontale)
+> - **≥ 10 km/h**: Valutazione completa **VERDE/GIALLO/ROSSO** in base alla direzione
+>
+> **Soglia offshore**: La soglia per considerare una spiaggia "riparata" (offshore) è **130°** invece di 135° per dare margine alle spiagge che si trovano quasi in posizione opposta al vento.
 
 #### Formula Angolare
 
@@ -217,7 +226,7 @@ else             → YELLOW  // Laterale
 |----------|-------------|----------|-------|--------|
 | Cala Rossa | NE (45°) | 0° | 🔴 Mosso | Vento frontale |
 | Bue Marino | E (90°) | 45° | 🔴 Mosso | Vento quasi frontale |
-| Cala Azzurra | SE (135°) | 90° | 🟡 Accettabile | Vento laterale |
+| Cala Azzurra | S (180°) | 135° | 🟢 Calmo | Vento offshore |
 | Lido Burrone | S (180°) | 135° | 🟢 Calmo | Vento offshore |
 | Cala Preveto | S (180°) | 135° | 🟢 Calmo | Vento offshore |
 | Cala Rotonda | W (270°) | 135° | 🟢 Calmo | Vento offshore |
@@ -241,7 +250,7 @@ class Beach {
 }
 ```
 
-### Spiagge Configurate (12 Spot)
+### Spiagge Configurate (15 Spot)
 
 #### 🧭 Legenda Venti Italiani
 | Vento | Direzione | Gradi |
@@ -258,44 +267,49 @@ class Beach {
 #### Costa Nord-Est
 | # | Nome | Coordinate GPS | Esposizione | Venti Sfavorevoli |
 |---|------|----------------|-------------|-------------------|
-| 1 | **Cala Rossa** | 37.9262, 12.3592 | NE | Maestrale, Tramontana, Grecale |
-| 2 | **Cala San Nicola** | 37.9338, 12.3497 | NE | Tramontana, Grecale, Maestrale |
-| 3 | **Scalo Cavallo** | 37.9375, 12.3483 | NE | Tramontana, Grecale, Maestrale |
+| 1 | **Cala Rossa** | 37.922464, 12.363907 | NE | Tramontana, Grecale |
+| 2 | **Cala San Nicola** | 37.935022, 12.346703 | NE | Grecale, Tramontana |
+| 3 | **Scalo Cavallo** | 37.930894, 12.349999 | NE | Grecale, Tramontana |
 
 #### Costa Est
 | # | Nome | Coordinate GPS | Esposizione | Venti Sfavorevoli |
 |---|------|----------------|-------------|-------------------|
-| 4 | **Bue Marino** | 37.9203, 12.3615 | E | Levante, Grecale, Scirocco* |
-
-*Nota: Con Scirocco mare leggermente mosso, impraticabile con Levante/Grecale.
+| 4 | **Bue Marino** | 37.917222, 12.369920 | E | Levante, Scirocco, Grecale |
 
 #### Costa Sud-Est
 | # | Nome | Coordinate GPS | Esposizione | Venti Sfavorevoli |
 |---|------|----------------|-------------|-------------------|
-| 5 | **Cala Azzurra** | 37.9109, 12.3335 | SE | Scirocco, Levante |
+| 5 | **Punta Marsala** | 37.907304, 12.366618 | SE | Scirocco, Levante, Ostro |
 
 #### Costa Sud
 | # | Nome | Coordinate GPS | Esposizione | Venti Sfavorevoli |
 |---|------|----------------|-------------|-------------------|
-| 6 | **Lido Burrone** | 37.9155, 12.3297 | S | Scirocco, Mezzogiorno, Libeccio |
-| 7 | **Cala Preveto** | 37.9158, 12.2982 | S | Scirocco, Mezzogiorno, Libeccio |
-
-#### Costa Ovest
-| # | Nome | Coordinate GPS | Esposizione | Venti Sfavorevoli |
-|---|------|----------------|-------------|-------------------|
-| 8 | **Cala Rotonda** | 37.9213, 12.2878 | W | Maestrale, Ponente, Libeccio |
-| 9 | **Cala Grande** | 37.9250, 12.2800 | W | Maestrale, Ponente |
-
-#### Costa Nord-Ovest
-| # | Nome | Coordinate GPS | Esposizione | Venti Sfavorevoli |
-|---|------|----------------|-------------|-------------------|
-| 10 | **Cala Faraglioni** | 37.9463, 12.3160 | NW | Maestrale, Ponente, Tramontana |
-| 11 | **Cala del Pozzo** | 37.9402, 12.2905 | NW | Maestrale, Ponente |
+| 6 | **Cala Azzurra** | 37.908715, 12.361280 | S | Ostro, Scirocco |
+| 7 | **Lido Burrone** | 37.918272, 12.338202 | S | Scirocco, Libeccio |
+| 8 | **Cala Preveto** | 37.918953, 12.302630 | S | Scirocco, Libeccio |
 
 #### Costa Nord (Centro)
 | # | Nome | Coordinate GPS | Esposizione | Venti Sfavorevoli |
 |---|------|----------------|-------------|-------------------|
-| 12 | **Spiaggia Praia** | 37.9315, 12.3268 | N | Tramontana, Grecale |
+| 9 | **Spiaggia Praia** | 37.929608, 12.325196 | N | Tramontana, Grecale |
+
+#### Costa Nord
+| # | Nome | Coordinate GPS | Esposizione | Venti Sfavorevoli |
+|---|------|----------------|-------------|-------------------|
+| 10 | **Cala Faraglioni** | 37.954491, 12.306777 | N | Maestrale, Tramontana |
+| 11 | **Cala Trapanese** | 37.953404, 12.308071 | N | Tramontana, Maestrale, Grecale |
+
+#### Costa Nord-Ovest
+| # | Nome | Coordinate GPS | Esposizione | Venti Sfavorevoli |
+|---|------|----------------|-------------|-------------------|
+| 12 | **Cala del Pozzo** | 37.942171, 12.287885 | NW | Maestrale, Ponente |
+
+#### Costa Ovest
+| # | Nome | Coordinate GPS | Esposizione | Venti Sfavorevoli |
+|---|------|----------------|-------------|-------------------|
+| 13 | **Cala Rotonda** | 37.923715, 12.284060 | W | Ponente, Maestrale |
+| 14 | **Cala Grande** | 37.931035, 12.279523 | W | Ponente, Libeccio |
+| 15 | **Spiaggia di Ponente** | 37.935384, 12.276704 | W | Ponente, Maestrale |
 
 ### Regola Generale per la Scelta
 
@@ -314,28 +328,30 @@ class Beach {
                          N (Tramontana)
                             ↑
             ┌───────────────┴───────────────┐
-            │      ⑩ Cala Faraglioni       │
-            │           (NW)                │
+            │  ⑩ Cala Faraglioni  ⑪ Cala   │
+            │      (N)         Trapanese(N) │
             │                               │
-            │  ⑪ Cala      ⑫ Spiaggia     │
-   (Ponente)│  del Pozzo      Praia        │ (Grecale)
+            │  ⑫ Cala                       │
+   (Ponente)│  del Pozzo  ⑨ Spiaggia Praia │ (Grecale)
      W ←────│    (NW)          (N)         │────→ NE
             │                               │
-            │         ② Cala San Nicola    │
-            │  ⑨ Cala          (NE)        │
-            │  Grande    ③ Scalo Cavallo   │
+            │  ⑮ Spiaggia  ② Cala San Nicola│
+            │  di Ponente      (NE)         │
+            │   (W)    ③ Scalo Cavallo      │
+            │              (NE)             │
+            │  ⑭ Cala                       │
+            │  Grande    ① Cala Rossa       │
             │   (W)           (NE)          │
             │                               │
-            │  ⑧ Cala    ① Cala Rossa     │
-            │  Rotonda        (NE)          │
-            │   (W)                         │ (Levante)
-     W ←────│                  ④ Bue Marino│────→ E
-            │  ⑦ Cala           (E)        │
-            │  Preveto                      │
-            │   (S)      ⑤ Cala Azzurra    │
-            │                 (SE)          │
-            │       ⑥ Lido Burrone         │
-            │            (S)                │
+            │  ⑬ Cala           ④ Bue Marino│ (Levante)
+     W ←────│  Rotonda           (E)        │────→ E
+            │   (W)                         │
+            │  ⑧ Cala      ⑥ Cala Azzurra   │
+            │  Preveto         (S)          │
+            │   (S)     ⑤ Punta Marsala     │
+            │       ⑦ Lido     (SE)         │
+            │       Burrone                 │
+            │         (S)                   │
             └───────────────┬───────────────┘
                             ↓
                      S (Mezzogiorno)
@@ -363,6 +379,20 @@ Beach(
 ### Architettura Ads
 
 Il sistema pubblicitario è **contestuale all'orario** e supporta due tipologie di banner con posizionamenti distinti.
+Le pubblicità sono caricate dinamicamente da un **file JSON su Google Drive**, permettendo di aggiornare i banner senza modificare il codice dell'app.
+
+#### Configurazione Remota
+
+```dart
+// URL del file JSON di configurazione ads su Google Drive
+static const String _adsConfigUrl = 
+    'https://drive.google.com/uc?export=download&id=1pav7QBy4-EFbxP_Q_2h3W1jJq2Ra6T0Z';
+```
+
+> **Come aggiornare le pubblicità:**
+> 1. Modifica il file `ads_config.json` su Google Drive
+> 2. L'app caricherà automaticamente le nuove pubblicità al prossimo avvio
+> 3. Non è necessario rilasciare una nuova versione dell'app
 
 #### Fasce Orarie
 
@@ -391,25 +421,28 @@ Il sistema pubblicitario è **contestuale all'orario** e supporta due tipologie 
 }
 ```
 
-### Implementazione Produzione
+### Configurazione Google Drive
 
-Per passare da mock a produzione, modifica `ad_service.dart`:
+Il file `ads_config.json` su Google Drive deve avere la seguente struttura:
 
-```dart
-Future<List<Ad>> fetchAds() async {
-  // PRODUZIONE: Decommentare
-  final response = await http.get(Uri.parse('https://api.tuoserver.com/ads'));
-  if (response.statusCode == 200) {
-    final List<dynamic> jsonList = json.decode(response.body);
-    return jsonList.map((json) => Ad.fromJson(json)).toList();
+```json
+[
+  {
+    "imageUrl": "https://cdn.example.com/ads/banner1.jpg",
+    "linkUrl": "https://example.com/promo",
+    "type": "all",
+    "position": "sticky"
+  },
+  {
+    "imageUrl": "https://cdn.example.com/ads/banner2.jpg",
+    "linkUrl": "https://example.com/restaurant",
+    "type": "lunch",
+    "position": "native"
   }
-  throw Exception('Failed to load ads');
-  
-  // MOCK: Commentare in produzione
-  // await Future.delayed(const Duration(milliseconds: 500));
-  // final String jsonString = '''...''';
-}
+]
 ```
+
+**Importante:** Assicurarsi che il file su Google Drive sia condiviso con "Chiunque abbia il link" per permettere all'app di scaricarlo.
 
 ---
 

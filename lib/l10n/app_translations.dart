@@ -28,6 +28,11 @@ class AppTranslations {
       'exposure': 'Exposure',
       'direction': 'Direction',
       'topSpot': 'Top Spot',
+      'retry': 'Retry',
+      'mapLegend': 'Legend',
+      'recommended': 'Recommended',
+      'notRecommended': 'Not Recommended',
+      'tapToNavigate': 'Tap a spot on the map to see details',
     },
     'it': {
       'appTitle': 'Favignana Top Spot',
@@ -46,6 +51,11 @@ class AppTranslations {
       'exposure': 'Esposizione',
       'direction': 'Direzione',
       'topSpot': 'Top Spot',
+      'retry': 'Riprova',
+      'mapLegend': 'Legenda',
+      'recommended': 'Consigliata',
+      'notRecommended': 'Sconsigliata',
+      'tapToNavigate': 'Tocca uno spot sulla mappa per i dettagli',
     },
   };
 
@@ -62,4 +72,9 @@ class AppTranslations {
   String get exposure => _localizedValues[_langCode]!['exposure']!;
   String get direction => _localizedValues[_langCode]!['direction']!;
   String get topSpot => _localizedValues[_langCode]!['topSpot']!;
+  String get retry => _localizedValues[_langCode]!['retry']!;
+  String get mapLegend => _localizedValues[_langCode]!['mapLegend']!;
+  String get recommended => _localizedValues[_langCode]!['recommended']!;
+  String get notRecommended => _localizedValues[_langCode]!['notRecommended']!;
+  String get tapToNavigate => _localizedValues[_langCode]!['tapToNavigate']!;
 }
