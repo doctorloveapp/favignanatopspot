@@ -27,6 +27,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   Ad? _nativeAd;
   bool _isLoading = true;
   String? _error;
+  String?
+      _selectedBeachName; // Per evidenziare la scheda selezionata dalla mappa
 
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _listKey = GlobalKey();
@@ -142,6 +144,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
 
     debugPrint('Scrolling to offset: $offset');
+
+    // Imposta lo spot selezionato per evidenziarlo
+    setState(() {
+      _selectedBeachName = beach.name;
+    });
 
     _scrollController.animateTo(
       offset,
@@ -272,6 +279,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 return BeachCard(
                                   beach: _beaches[beachIndex],
                                   translations: translations,
+                                  isSelected: _selectedBeachName ==
+                                      _beaches[beachIndex].name,
                                 );
                               },
                               childCount: _beaches.length +

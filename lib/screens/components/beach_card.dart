@@ -6,8 +6,14 @@ import '../../l10n/app_translations.dart';
 class BeachCard extends StatelessWidget {
   final Beach beach;
   final AppTranslations translations;
+  final bool isSelected;
 
-  const BeachCard({super.key, required this.beach, required this.translations});
+  const BeachCard({
+    super.key,
+    required this.beach,
+    required this.translations,
+    this.isSelected = false,
+  });
 
   Color _getStatusColor(BeachStatus status) {
     switch (status) {
@@ -69,94 +75,120 @@ class BeachCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      elevation: 4,
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Immagine dello spot con altezza fissa
-          SizedBox(
-            height: 120,
-            width: double.infinity,
-            child: Image.asset(
-              _getImagePath(),
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  color: Colors.grey.shade300,
-                  child: const Center(
-                    child: Icon(Icons.image_not_supported,
-                        size: 40, color: Colors.grey),
-                  ),
-                );
-              },
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        beach.name,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: _getStatusColor(beach.status)
-                            .withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(20),
-                        border:
-                            Border.all(color: _getStatusColor(beach.status)),
-                      ),
-                      child: Text(
-                        _getStatusText(beach.status),
-                        style: TextStyle(
-                          color: _getStatusColor(beach.status),
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
+      decoration: isSelected
+          ? BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: [
+                // Effetto neon azzurro
+                BoxShadow(
+                  color: Colors.cyan.withValues(alpha: 0.6),
+                  blurRadius: 12,
+                  spreadRadius: 2,
                 ),
-                const SizedBox(height: 8),
-                Text("${translations.exposure}: ${beach.exposure}"),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: _launchMaps,
-                    icon: const Icon(Icons.navigation),
-                    label: Text(translations.navigate),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueAccent,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
+                BoxShadow(
+                  color: Colors.cyanAccent.withValues(alpha: 0.4),
+                  blurRadius: 20,
+                  spreadRadius: 4,
                 ),
               ],
+            )
+          : null,
+      child: Card(
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: isSelected
+              ? const BorderSide(color: Colors.cyan, width: 3)
+              : BorderSide.none,
+        ),
+        elevation: isSelected ? 8 : 4,
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Immagine dello spot con altezza fissa
+            SizedBox(
+              height: 120,
+              width: double.infinity,
+              child: Image.asset(
+                _getImagePath(),
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    color: Colors.grey.shade300,
+                    child: const Center(
+                      child: Icon(Icons.image_not_supported,
+                          size: 40, color: Colors.grey),
+                    ),
+                  );
+                },
+              ),
             ),
-          ),
-        ],
-      ),
-    );
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          beach.name,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: _getStatusColor(beach.status)
+                              .withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(20),
+                          border:
+                              Border.all(color: _getStatusColor(beach.status)),
+                        ),
+                        child: Text(
+                          _getStatusText(beach.status),
+                          style: TextStyle(
+                            color: _getStatusColor(beach.status),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text("${translations.exposure}: ${beach.exposure}"),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _launchMaps,
+                      icon: const Icon(Icons.navigation),
+                      label: Text(translations.navigate),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blueAccent,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ), // Close Card
+    ); // Close Container
   }
 }
