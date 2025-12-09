@@ -7,6 +7,7 @@ import '../../models/beach.dart';
 /// - Marker colorati per ogni spiaggia (verde/giallo/rosso)
 /// - Animazione del vento con particelle
 /// - Indicatore del Nord
+/// - Zoom in/out con panning
 class IslandMapWidget extends StatefulWidget {
   final List<Beach> beaches;
   final double windSpeed;
@@ -29,6 +30,16 @@ class _IslandMapWidgetState extends State<IslandMapWidget>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
 
+  // Zoom state
+  bool _isZoomed = false;
+  final TransformationController _transformationController =
+      TransformationController();
+
+  // Zoom levels
+  static const double _minScale = 1.0;
+  static const double _maxScale = 2.5;
+  static const double _zoomedScale = 2.0;
+
   @override
   void initState() {
     super.initState();
@@ -41,7 +52,31 @@ class _IslandMapWidgetState extends State<IslandMapWidget>
   @override
   void dispose() {
     _animationController.dispose();
+    _transformationController.dispose();
     super.dispose();
+  }
+
+  /// Toggle zoom in/out
+  void _toggleZoom() {
+    setState(() {
+      if (_isZoomed) {
+        // Zoom out - reset to original
+        _transformationController.value = Matrix4.identity();
+        _isZoomed = false;
+      } else {
+        // Zoom in - center zoom
+        final matrix = Matrix4.diagonal3Values(_zoomedScale, _zoomedScale, 1.0);
+        // Center the zoom
+        _transformationController.value = matrix;
+        _isZoomed = true;
+      }
+    });
+  }
+
+  /// Handle beach marker tap
+  void _onBeachTapped(Beach beach) {
+    debugPrint('Beach tapped: ${beach.name}');
+    widget.onBeachTap?.call(beach);
   }
 
   @override
@@ -67,50 +102,96 @@ class _IslandMapWidgetState extends State<IslandMapWidget>
               borderRadius: BorderRadius.circular(16),
               child: Stack(
                 children: [
-                  // 1. Mappa di sfondo
-                  Image.asset(
-                    'assets/mappaOK.png',
-                    fit: BoxFit.contain,
-                    width: double.infinity,
-                  ),
+                  // Mappa interattiva con zoom e pan
+                  InteractiveViewer(
+                    transformationController: _transformationController,
+                    minScale: _minScale,
+                    maxScale: _maxScale,
+                    boundaryMargin: EdgeInsets.zero,
+                    constrained: true,
+                    panEnabled: _isZoomed,
+                    scaleEnabled:
+                        false, // Disabilita pinch zoom, usiamo solo il bottone
+                    child: Stack(
+                      children: [
+                        // 1. Mappa di sfondo
+                        Image.asset(
+                          'assets/mappaOK.png',
+                          fit: BoxFit.contain,
+                          width: double.infinity,
+                        ),
 
-                  // 2. Overlay animazione vento
-                  Positioned.fill(
-                    child: AnimatedBuilder(
-                      animation: _animationController,
-                      builder: (context, child) {
-                        return CustomPaint(
-                          painter: WindParticlesPainter(
-                            windDirection: widget.windDirection,
-                            windSpeed: widget.windSpeed,
-                            animationValue: _animationController.value,
+                        // 2. Overlay animazione vento
+                        Positioned.fill(
+                          child: AnimatedBuilder(
+                            animation: _animationController,
+                            builder: (context, child) {
+                              return CustomPaint(
+                                painter: WindParticlesPainter(
+                                  windDirection: widget.windDirection,
+                                  windSpeed: widget.windSpeed,
+                                  animationValue: _animationController.value,
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      },
+                        ),
+
+                        // 3. Marker spiagge
+                        Positioned.fill(
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              return Stack(
+                                children: widget.beaches.map((beach) {
+                                  return Positioned(
+                                    left:
+                                        beach.mapX * constraints.maxWidth - 12,
+                                    top:
+                                        beach.mapY * constraints.maxHeight - 12,
+                                    child: _BeachMarker(
+                                      beach: beach,
+                                      onTap: () => _onBeachTapped(beach),
+                                    ),
+                                  );
+                                }).toList(),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                   ),
 
-                  // 3. Marker spiagge
-                  Positioned.fill(
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        return Stack(
-                          children: widget.beaches.map((beach) {
-                            return Positioned(
-                              left: beach.mapX * constraints.maxWidth - 10,
-                              top: beach.mapY * constraints.maxHeight - 10,
-                              child: _BeachMarker(
-                                beach: beach,
-                                onTap: () => widget.onBeachTap?.call(beach),
-                              ),
-                            );
-                          }).toList(),
-                        );
-                      },
+                  // 4. Bottone Zoom (angolo in basso a sinistra)
+                  Positioned(
+                    bottom: 8,
+                    left: 8,
+                    child: GestureDetector(
+                      onTap: _toggleZoom,
+                      child: Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          borderRadius: BorderRadius.circular(8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.2),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          _isZoomed ? Icons.zoom_out : Icons.zoom_in,
+                          color: Colors.blue.shade700,
+                          size: 20,
+                        ),
+                      ),
                     ),
                   ),
 
-                  // 4. Indicatore Vento (più trasparente)
+                  // 5. Indicatore Vento (angolo in alto a destra)
                   Positioned(
                     top: 8,
                     right: 8,
@@ -124,7 +205,7 @@ class _IslandMapWidgetState extends State<IslandMapWidget>
             ),
           ),
 
-          // 5. Legenda sotto la mappa in riga orizzontale
+          // 6. Legenda sotto la mappa in riga orizzontale
           const SizedBox(height: 8),
           const _MapLegend(),
         ],
@@ -145,7 +226,7 @@ class _BeachMarker extends StatelessWidget {
       case BeachStatus.green:
         return Colors.green;
       case BeachStatus.yellow:
-        return Colors.amber; // Giallo vero invece di arancione
+        return Colors.amber;
       case BeachStatus.red:
         return Colors.red;
     }
@@ -164,29 +245,36 @@ class _BeachMarker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Tooltip(
-        message: beach.name,
-        child: Container(
-          width: 20,
-          height: 20,
-          decoration: BoxDecoration(
-            color: _color,
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 1.5),
-            boxShadow: [
-              BoxShadow(
-                color: _color.withValues(alpha: 0.5),
-                blurRadius: 4,
-                spreadRadius: 1,
-              ),
-            ],
-          ),
-          child: Icon(
-            _icon,
-            color: Colors.white,
-            size: 11,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          debugPrint('Marker InkWell tapped: ${beach.name}');
+          onTap?.call();
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Tooltip(
+          message: beach.name,
+          child: Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              color: _color,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 2),
+              boxShadow: [
+                BoxShadow(
+                  color: _color.withValues(alpha: 0.5),
+                  blurRadius: 6,
+                  spreadRadius: 2,
+                ),
+              ],
+            ),
+            child: Icon(
+              _icon,
+              color: Colors.white,
+              size: 12,
+            ),
           ),
         ),
       ),
@@ -209,7 +297,7 @@ class _WindCompass extends StatelessWidget {
     if (windDirection >= 22.5 && windDirection < 67.5) return 'Grecale';
     if (windDirection >= 67.5 && windDirection < 112.5) return 'Levante';
     if (windDirection >= 112.5 && windDirection < 157.5) return 'Scirocco';
-    if (windDirection >= 157.5 && windDirection < 202.5) return 'Mezzogiorno';
+    if (windDirection >= 157.5 && windDirection < 202.5) return 'Ostro';
     if (windDirection >= 202.5 && windDirection < 247.5) return 'Libeccio';
     if (windDirection >= 247.5 && windDirection < 292.5) return 'Ponente';
     return 'Maestrale';
@@ -374,21 +462,6 @@ class WindParticlesPainter extends CustomPainter {
 
     // IMPORTANTE: windDirection indica DA DOVE viene il vento
     // Le particelle devono muoversi nella direzione OPPOSTA (verso dove VA il vento)
-    // Esempio: vento da Nord (0°) → particelle vanno verso Sud (si muovono verso il basso)
-    //
-    // Inoltre, nella convenzione grafica Flutter/schermo:
-    // - Y cresce verso il BASSO (non verso l'alto come in matematica)
-    // - X cresce verso destra
-    //
-    // Quindi per un vento da Nord (0°):
-    // - Le particelle devono andare verso il basso (Y positivo)
-    // - moveAngle = windDirection (0°) in gradi, ma dobbiamo convertire per lo schermo
-    //
-    // Conversione: in Flutter, 0° = destra, 90° = basso, 180° = sinistra, 270° = alto
-    // Ma windDirection usa: 0° = Nord, 90° = Est, 180° = Sud, 270° = Ovest
-    //
-    // Per convertire: moveAngleScreen = windDirection + 90° (per ruotare il sistema di riferimento)
-    // Poi le particelle vanno VERSO quella direzione (non da quella direzione)
     final moveAngle = (windDirection + 90) *
         pi /
         180; // +90 per convertire da meteo a schermo
@@ -404,12 +477,10 @@ class WindParticlesPainter extends CustomPainter {
       final distance = progress * 120 * (windSpeed / 15).clamp(0.6, 2.5);
 
       // Calcola posizione della particella
-      // cos(angle) = movimento orizzontale, sin(angle) = movimento verticale
       final x = startX + cos(moveAngle) * distance;
       final y = startY + sin(moveAngle) * distance;
 
       // Lunghezza della linea (particella) proporzionale al vento
-      // La coda della particella è nella direzione opposta al movimento
       final lineLength = 18 * (windSpeed / 15).clamp(0.5, 2.0);
       final endX = x - cos(moveAngle) * lineLength;
       final endY = y - sin(moveAngle) * lineLength;

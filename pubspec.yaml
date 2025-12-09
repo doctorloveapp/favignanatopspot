@@ -1,10 +1,10 @@
 name: favignana_top_spot
 description: A tourist app for Favignana beaches.
-publish_to: 'none'
-version: 1.0.3+3
+publish_to: "none"
+version: 1.0.5+5
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
   flutter:
@@ -44,7 +44,7 @@ flutter_launcher_icons:
 
 flutter:
   uses-material-design: true
-  
+
   # Assets dell'applicazione
   assets:
     - assets/

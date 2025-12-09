@@ -60,8 +60,8 @@ class Beach {
         lon: 12.346703,
         exposure: "NE",
         badWinds: ["NE", "N"],
-        mapX: 0.691,
-        mapY: 0.350,
+        mapX: 0.693,
+        mapY: 0.409,
       ),
       Beach(
         name: "Scalo Cavallo",
@@ -69,8 +69,8 @@ class Beach {
         lon: 12.349999,
         exposure: "NE",
         badWinds: ["NE", "N"],
-        mapX: 0.720,
-        mapY: 0.414,
+        mapX: 0.707,
+        mapY: 0.441,
       ),
 
       // ═══════════════════════════════════════════════════════════════
@@ -143,8 +143,8 @@ class Beach {
         lon: 12.325196,
         exposure: "N",
         badWinds: ["N", "NE"],
-        mapX: 0.540,
-        mapY: 0.380,
+        mapX: 0.535,
+        mapY: 0.468,
       ),
 
       // ═══════════════════════════════════════════════════════════════
@@ -200,8 +200,8 @@ class Beach {
         lon: 12.279523,
         exposure: "W",
         badWinds: ["W", "SW"],
-        mapX: 0.180,
-        mapY: 0.450,
+        mapX: 0.213,
+        mapY: 0.453,
       ),
       Beach(
         name: "Spiaggia di Ponente",

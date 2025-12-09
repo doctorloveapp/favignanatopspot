@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,6 +11,7 @@
             padding: 0;
             box-sizing: border-box;
         }
+
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
             background: #1a1a2e;
@@ -17,23 +19,27 @@
             min-height: 100vh;
             padding: 20px;
         }
+
         h1 {
             text-align: center;
             margin-bottom: 10px;
             color: #00d4ff;
         }
+
         .instructions {
             text-align: center;
             margin-bottom: 20px;
             color: #aaa;
             font-size: 14px;
         }
+
         .container {
             display: flex;
             gap: 20px;
             max-width: 1600px;
             margin: 0 auto;
         }
+
         .map-container {
             position: relative;
             display: inline-block;
@@ -41,19 +47,13 @@
             border-radius: 8px;
             overflow: hidden;
         }
+
         #mapImage {
             display: block;
             max-width: 100%;
             cursor: crosshair;
         }
-        .grid-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
+
         .marker {
             position: absolute;
             width: 24px;
@@ -68,17 +68,19 @@
             font-size: 10px;
             font-weight: bold;
             color: white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
             transition: transform 0.2s;
         }
+
         .marker:hover {
             transform: translate(-50%, -50%) scale(1.3);
             z-index: 100;
         }
-        .marker.green { background: #22c55e; }
-        .marker.yellow { background: #f59e0b; }
-        .marker.red { background: #ef4444; }
-        
+
+        .marker.green {
+            background: #22c55e;
+        }
+
         .sidebar {
             width: 400px;
             background: #16213e;
@@ -87,6 +89,7 @@
             max-height: 90vh;
             overflow-y: auto;
         }
+
         .coordinates-display {
             background: #0f3460;
             padding: 15px;
@@ -94,62 +97,58 @@
             margin-bottom: 15px;
             text-align: center;
         }
+
         .coordinates-display h3 {
             color: #00d4ff;
             margin-bottom: 10px;
         }
+
         .coord-value {
             font-family: 'Courier New', monospace;
             font-size: 24px;
             color: #00ff88;
         }
-        
+
         .spot-list h3 {
             color: #00d4ff;
             margin-bottom: 10px;
             border-bottom: 1px solid #333;
             padding-bottom: 5px;
         }
+
         .spot-item {
             background: #0f3460;
             padding: 10px;
             margin-bottom: 8px;
             border-radius: 6px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             font-size: 12px;
         }
+
         .spot-item .name {
             font-weight: bold;
             color: #fff;
         }
+
         .spot-item .coords {
             font-family: 'Courier New', monospace;
             color: #00ff88;
             font-size: 11px;
         }
-        .spot-item button {
-            background: #00d4ff;
-            border: none;
-            color: #000;
-            padding: 4px 8px;
-            border-radius: 4px;
-            cursor: pointer;
+
+        .spot-item .gps {
+            color: #aaa;
             font-size: 10px;
-            font-weight: bold;
         }
-        .spot-item button:hover {
-            background: #00a8cc;
-        }
-        
+
         .output-section {
             margin-top: 20px;
         }
+
         .output-section h3 {
             color: #00d4ff;
             margin-bottom: 10px;
         }
+
         #codeOutput {
             background: #0a0a15;
             padding: 10px;
@@ -161,6 +160,7 @@
             max-height: 300px;
             overflow-y: auto;
         }
+
         .copy-btn {
             background: #22c55e;
             border: none;
@@ -171,21 +171,25 @@
             margin-top: 10px;
             font-weight: bold;
         }
+
         .copy-btn:hover {
             background: #16a34a;
         }
-        
-        .crosshair-h, .crosshair-v {
+
+        .crosshair-h,
+        .crosshair-v {
             position: absolute;
             background: rgba(0, 212, 255, 0.5);
             pointer-events: none;
             display: none;
         }
+
         .crosshair-h {
             height: 1px;
             width: 100%;
             left: 0;
         }
+
         .crosshair-v {
             width: 1px;
             height: 100%;
@@ -193,29 +197,30 @@
         }
     </style>
 </head>
+
 <body>
-    <h1>🏝️ Debug Mappa Favignana - Posizionamento Spot</h1>
-    <p class="instructions">Clicca sulla mappa per ottenere le coordinate (mapX, mapY). Trascina i marker per riposizionarli.</p>
-    
+    <h1>🏝️ Debug Mappa Favignana - Posizionamento Spot (v1.0.5)</h1>
+    <p class="instructions">Clicca sulla mappa per ottenere le coordinate (mapX, mapY). Trascina i marker per
+        riposizionarli.</p>
+
     <div class="container">
         <div class="map-container" id="mapContainer">
             <img id="mapImage" src="assets/mappaOK.png" alt="Mappa Favignana">
             <div class="crosshair-h" id="crosshairH"></div>
             <div class="crosshair-v" id="crosshairV"></div>
-            <!-- I marker verranno aggiunti dinamicamente -->
         </div>
-        
+
         <div class="sidebar">
             <div class="coordinates-display">
                 <h3>📍 Coordinate Click</h3>
                 <div class="coord-value" id="coordDisplay">Clicca sulla mappa</div>
             </div>
-            
+
             <div class="spot-list">
-                <h3>🏖️ Lista Spot (15)</h3>
+                <h3>🏖️ Lista Spot (15) - COORDINATE v1.0.5</h3>
                 <div id="spotList"></div>
             </div>
-            
+
             <div class="output-section">
                 <h3>📋 Codice Dart da Copiare</h3>
                 <div id="codeOutput"></div>
@@ -225,25 +230,23 @@
     </div>
 
     <script>
-        // Dati degli spot attuali - Coordinate GPS aggiornate
-        // I 3 nuovi spot (Punta Marsala, Cala Trapanese, Spiaggia di Ponente) hanno coordinate mapX/mapY da calibrare
+        // COORDINATE AGGIORNATE v1.0.5 (Dicembre 2024)
         const spots = [
-            { id: 1, name: "Cala Rossa", mapX: 0.801, mapY: 0.578, gps: "37.922464, 12.363907" },
-            { id: 2, name: "Cala Azzurra", mapX: 0.773, mapY: 0.783, gps: "37.908715, 12.361280" },
-            { id: 3, name: "Lido Burrone", mapX: 0.605, mapY: 0.627, gps: "37.918272, 12.338202" },
-            { id: 4, name: "Cala Rotonda", mapX: 0.237, mapY: 0.552, gps: "37.923715, 12.284060" },
-            { id: 5, name: "Bue Marino", mapX: 0.850, mapY: 0.661, gps: "37.917222, 12.369920" },
-            { id: 6, name: "Cala Preveto", mapX: 0.375, mapY: 0.623, gps: "37.918953, 12.302630" },
-            { id: 7, name: "Spiaggia Praia", mapX: 0.540, mapY: 0.380, gps: "37.929608, 12.325196" },
-            { id: 8, name: "Cala San Nicola", mapX: 0.691, mapY: 0.350, gps: "37.935022, 12.346703" },
-            { id: 9, name: "Scalo Cavallo", mapX: 0.720, mapY: 0.414, gps: "37.930894, 12.349999" },
-            { id: 10, name: "Cala Faraglioni", mapX: 0.410, mapY: 0.139, gps: "37.954491, 12.306777" },
-            { id: 11, name: "Cala del Pozzo", mapX: 0.250, mapY: 0.280, gps: "37.942171, 12.287885" },
-            { id: 12, name: "Cala Grande", mapX: 0.180, mapY: 0.450, gps: "37.931035, 12.279523" },
-            // === NUOVI SPOT - DA CALIBRARE ===
-            { id: 13, name: "Punta Marsala", mapX: 0.828, mapY: 0.772, gps: "37.907304, 12.366618" },
-            { id: 14, name: "Cala Trapanese", mapX: 0.428, mapY: 0.162, gps: "37.953404, 12.308071" },
-            { id: 15, name: "Spiaggia di Ponente", mapX: 0.182, mapY: 0.394, gps: "37.935384, 12.276704" }
+            { id: 1, name: "Cala Rossa", mapX: 0.801, mapY: 0.578, gps: "37.922464, 12.363907", exposure: "NE" },
+            { id: 2, name: "Cala San Nicola", mapX: 0.693, mapY: 0.409, gps: "37.935022, 12.346703", exposure: "NE" },
+            { id: 3, name: "Scalo Cavallo", mapX: 0.707, mapY: 0.441, gps: "37.930894, 12.349999", exposure: "NE" },
+            { id: 4, name: "Bue Marino", mapX: 0.850, mapY: 0.661, gps: "37.917222, 12.369920", exposure: "E" },
+            { id: 5, name: "Cala Azzurra", mapX: 0.773, mapY: 0.783, gps: "37.908715, 12.361280", exposure: "S" },
+            { id: 6, name: "Punta Marsala", mapX: 0.828, mapY: 0.772, gps: "37.907304, 12.366618", exposure: "SE" },
+            { id: 7, name: "Lido Burrone", mapX: 0.605, mapY: 0.627, gps: "37.918272, 12.338202", exposure: "S" },
+            { id: 8, name: "Cala Preveto", mapX: 0.375, mapY: 0.623, gps: "37.918953, 12.302630", exposure: "S" },
+            { id: 9, name: "Spiaggia Praia", mapX: 0.535, mapY: 0.468, gps: "37.929608, 12.325196", exposure: "N" },
+            { id: 10, name: "Cala Faraglioni", mapX: 0.410, mapY: 0.139, gps: "37.954491, 12.306777", exposure: "N" },
+            { id: 11, name: "Cala Trapanese", mapX: 0.428, mapY: 0.162, gps: "37.953404, 12.308071", exposure: "N" },
+            { id: 12, name: "Cala del Pozzo", mapX: 0.250, mapY: 0.280, gps: "37.942171, 12.287885", exposure: "NW" },
+            { id: 13, name: "Cala Rotonda", mapX: 0.237, mapY: 0.552, gps: "37.923715, 12.284060", exposure: "W" },
+            { id: 14, name: "Cala Grande", mapX: 0.213, mapY: 0.453, gps: "37.931035, 12.279523", exposure: "W" },
+            { id: 15, name: "Spiaggia di Ponente", mapX: 0.182, mapY: 0.394, gps: "37.935384, 12.276704", exposure: "W" }
         ];
 
         const mapContainer = document.getElementById('mapContainer');
@@ -258,19 +261,17 @@
 
         // Crea i marker sulla mappa
         function createMarkers() {
-            spots.forEach((spot, index) => {
+            spots.forEach((spot) => {
                 const marker = document.createElement('div');
-                marker.className = spot.isNew ? 'marker yellow' : 'marker green';
+                marker.className = 'marker green';
                 marker.id = `marker-${spot.id}`;
                 marker.textContent = spot.id;
-                marker.title = spot.name + (spot.gps ? ' - GPS: ' + spot.gps : '');
+                marker.title = `${spot.name} - ${spot.exposure} - GPS: ${spot.gps}`;
                 marker.style.left = (spot.mapX * 100) + '%';
                 marker.style.top = (spot.mapY * 100) + '%';
-                
-                // Drag and drop
-                marker.draggable = false;
+
                 marker.addEventListener('mousedown', (e) => startDrag(e, spot));
-                
+
                 mapContainer.appendChild(marker);
             });
         }
@@ -278,21 +279,19 @@
         // Crea la lista degli spot
         function updateSpotList() {
             spotList.innerHTML = spots.map(spot => `
-                <div class="spot-item" style="${spot.isNew ? 'border: 2px solid #f59e0b;' : ''}">
-                    <div>
-                        <span class="name">${spot.id}. ${spot.name}${spot.isNew ? ' 🆕' : ''}</span>
-                        ${spot.gps ? '<br><span style="color:#aaa;font-size:10px;">GPS: ' + spot.gps + '</span>' : ''}
-                    </div>
-                    <span class="coords">X: ${spot.mapX.toFixed(3)} Y: ${spot.mapY.toFixed(3)}</span>
+                <div class="spot-item">
+                    <div class="name">${spot.id}. ${spot.name} (${spot.exposure})</div>
+                    <div class="coords">mapX: ${spot.mapX.toFixed(3)}, mapY: ${spot.mapY.toFixed(3)}</div>
+                    <div class="gps">GPS: ${spot.gps}</div>
                 </div>
             `).join('');
-            
+
             updateCodeOutput();
         }
 
         // Aggiorna il codice Dart
         function updateCodeOutput() {
-            const code = spots.map(spot => 
+            const code = spots.map(spot =>
                 `    // ${spot.name}\n    mapX: ${spot.mapX.toFixed(3)},\n    mapY: ${spot.mapY.toFixed(3)},`
             ).join('\n\n');
             codeOutput.textContent = code;
@@ -303,18 +302,17 @@
             const rect = mapImage.getBoundingClientRect();
             const x = (e.clientX - rect.left) / rect.width;
             const y = (e.clientY - rect.top) / rect.height;
-            
+
             coordDisplay.innerHTML = `mapX: ${x.toFixed(3)}<br>mapY: ${y.toFixed(3)}`;
         });
 
         // Mostra crosshair
         mapContainer.addEventListener('mousemove', (e) => {
-            const rect = mapImage.getBoundingClientRect();
             const containerRect = mapContainer.getBoundingClientRect();
-            
+
             const relX = e.clientX - containerRect.left;
             const relY = e.clientY - containerRect.top;
-            
+
             crosshairH.style.display = 'block';
             crosshairV.style.display = 'block';
             crosshairH.style.top = relY + 'px';
@@ -336,20 +334,19 @@
 
         function onDrag(e) {
             if (!draggedMarker) return;
-            
+
             const rect = mapImage.getBoundingClientRect();
             let x = (e.clientX - rect.left) / rect.width;
             let y = (e.clientY - rect.top) / rect.height;
-            
-            // Limita alle coordinate valide
+
             x = Math.max(0, Math.min(1, x));
             y = Math.max(0, Math.min(1, y));
-            
+
             draggedMarker.spot.mapX = x;
             draggedMarker.spot.mapY = y;
             draggedMarker.element.style.left = (x * 100) + '%';
             draggedMarker.element.style.top = (y * 100) + '%';
-            
+
             coordDisplay.innerHTML = `<strong>${draggedMarker.spot.name}</strong><br>mapX: ${x.toFixed(3)}<br>mapY: ${y.toFixed(3)}`;
             updateSpotList();
         }
@@ -362,12 +359,12 @@
 
         // Copia codice
         function copyCode() {
-            const code = spots.map(spot => 
+            const code = spots.map(spot =>
                 `mapX: ${spot.mapX.toFixed(3)}, mapY: ${spot.mapY.toFixed(3)}, // ${spot.name}`
             ).join('\n');
-            
+
             navigator.clipboard.writeText(code).then(() => {
-                alert('Codice copiato negli appunti!');
+                alert('✅ Codice copiato negli appunti!');
             });
         }
 
@@ -376,4 +373,5 @@
         updateSpotList();
     </script>
 </body>
+
 </html>
