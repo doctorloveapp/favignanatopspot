@@ -369,20 +369,40 @@ class _WindCompass extends StatelessWidget {
           ),
           const SizedBox(height: 1),
           // Velocità
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-            decoration: BoxDecoration(
-              color: Colors.blue.shade50,
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              '${windSpeed.toInt()} km/h',
-              style: TextStyle(
-                fontSize: 8,
-                fontWeight: FontWeight.w600,
-                color: Colors.blue.shade700,
+          Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  '${windSpeed.toInt()} km/h',
+                  style: TextStyle(
+                    fontSize: 8,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.blue.shade700,
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(height: 1),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  '${(windSpeed / 1.60934).toInt()} mph',
+                  style: TextStyle(
+                    fontSize: 7,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.blue.shade600,
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
