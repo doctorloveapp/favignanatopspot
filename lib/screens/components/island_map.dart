@@ -2,6 +2,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../../models/beach.dart';
 
+import '../home_screen.dart';
+
 /// Widget che visualizza la mappa dell'isola di Favignana con:
 /// - Immagine mappa di sfondo
 /// - Marker colorati per ogni spiaggia (verde/giallo/rosso)
@@ -10,15 +12,17 @@ import '../../models/beach.dart';
 /// - Zoom in/out con panning
 class IslandMapWidget extends StatefulWidget {
   final List<Beach> beaches;
-  final double windSpeed;
-  final double windDirection;
+  final Map<String, dynamic> weatherData;
+  final ForecastMode currentMode;
+  final Function(ForecastMode) onForecastModeChanged;
   final Function(Beach)? onBeachTap;
 
   const IslandMapWidget({
     super.key,
     required this.beaches,
-    required this.windSpeed,
-    required this.windDirection,
+    required this.weatherData,
+    required this.currentMode,
+    required this.onForecastModeChanged,
     this.onBeachTap,
   });
 
@@ -81,6 +85,29 @@ class _IslandMapWidgetState extends State<IslandMapWidget>
 
   @override
   Widget build(BuildContext context) {
+    String forecastKey;
+    String badgeText;
+    switch (widget.currentMode) {
+      case ForecastMode.now:
+        forecastKey = 'now';
+        badgeText = 'ORA';
+        break;
+      case ForecastMode.hours6:
+        forecastKey = 'hours6';
+        badgeText = '6 ORE';
+        break;
+      case ForecastMode.hours24:
+        forecastKey = 'hours24';
+        badgeText = '24 ORE';
+        break;
+    }
+
+    final forecastData = widget.weatherData[forecastKey] as Map<String, dynamic>?;
+    final windSpeed = forecastData != null ? (forecastData['windspeed'] as num).toDouble() : 3.0;
+    final windDirection = forecastData != null ? (forecastData['winddirection'] as num).toDouble() : 0.0;
+    final temperature = forecastData != null ? (forecastData['temperature'] as num).toDouble() : 25.0;
+    final humidity = forecastData != null ? (forecastData['humidity'] as num).toInt() : 60;
+
     return Container(
       margin: const EdgeInsets.all(12),
       child: Column(
@@ -128,8 +155,8 @@ class _IslandMapWidgetState extends State<IslandMapWidget>
                             builder: (context, child) {
                               return CustomPaint(
                                 painter: WindParticlesPainter(
-                                  windDirection: widget.windDirection,
-                                  windSpeed: widget.windSpeed,
+                                  windDirection: windDirection,
+                                  windSpeed: windSpeed,
                                   animationValue: _animationController.value,
                                 ),
                               );
@@ -196,8 +223,36 @@ class _IslandMapWidgetState extends State<IslandMapWidget>
                     top: 8,
                     right: 8,
                     child: _WindCompass(
-                      windDirection: widget.windDirection,
-                      windSpeed: widget.windSpeed,
+                      windDirection: windDirection,
+                      windSpeed: windSpeed,
+                    ),
+                  ),
+
+                  // 6. Badge Previsione (angolo in alto a sinistra)
+                  Positioned(
+                    top: 8,
+                    left: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.redAccent,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.2),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Text(
+                        badgeText,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -205,10 +260,132 @@ class _IslandMapWidgetState extends State<IslandMapWidget>
             ),
           ),
 
-          // 6. Legenda sotto la mappa in riga orizzontale
+          // 7. Legenda sotto la mappa in riga orizzontale
           const SizedBox(height: 8),
           const _MapLegend(),
+
+          // 8. Schermetti per selezione previsione e dati meteo
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Schermetto Sinistra: Selezione Previsione
+              Expanded(
+                flex: 3,
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _ForecastButton(
+                        label: 'ORA',
+                        isSelected: widget.currentMode == ForecastMode.now,
+                        onTap: () => widget.onForecastModeChanged(ForecastMode.now),
+                      ),
+                      _ForecastButton(
+                        label: '6 ORE',
+                        isSelected: widget.currentMode == ForecastMode.hours6,
+                        onTap: () => widget.onForecastModeChanged(ForecastMode.hours6),
+                      ),
+                      _ForecastButton(
+                        label: '24 ORE',
+                        isSelected: widget.currentMode == ForecastMode.hours24,
+                        onTap: () => widget.onForecastModeChanged(ForecastMode.hours24),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Schermetto Destra: Temperatura e Umidità
+              Expanded(
+                flex: 2,
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Column(
+                        children: [
+                          const Icon(Icons.thermostat, color: Colors.orange, size: 16),
+                          Text(
+                            '${temperature.toStringAsFixed(1)}°C',
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                          ),
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          const Icon(Icons.water_drop, color: Colors.blue, size: 16),
+                          Text(
+                            '$humidity%',
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class _ForecastButton extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _ForecastButton({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.blue.shade100 : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            color: isSelected ? Colors.blue.shade800 : Colors.grey.shade700,
+          ),
+        ),
       ),
     );
   }

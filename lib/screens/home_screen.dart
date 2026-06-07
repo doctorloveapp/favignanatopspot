@@ -10,6 +10,8 @@ import 'components/beach_card.dart';
 import 'components/ad_banner.dart';
 import 'components/island_map.dart';
 
+enum ForecastMode { now, hours6, hours24 }
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -22,6 +24,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   final AdService _adService = AdService();
 
   Map<String, dynamic>? _weatherData;
+  ForecastMode _currentForecastMode = ForecastMode.now;
   List<Beach> _beaches = [];
   Ad? _stickyAd;
   Ad? _nativeAd;
@@ -77,23 +80,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       final stickyAd = filteredAds.where((ad) => ad.isSticky).firstOrNull;
       final nativeAd = filteredAds.where((ad) => ad.isNative).firstOrNull;
 
-      final beaches = Beach.getBeaches();
-      for (var beach in beaches) {
-        beach.status = WindLogic.calculateStatus(
-          (weather['windspeed'] as num).toDouble(),
-          (weather['winddirection'] as num).toDouble(),
-          beach,
-        );
-      }
+      _weatherData = weather;
+      _stickyAd = stickyAd;
+      _nativeAd = nativeAd;
+      _beaches = Beach.getBeaches();
 
-      beaches.sort((a, b) => a.status.index.compareTo(b.status.index));
+      _applyForecast(_currentForecastMode, updateState: false);
 
       if (mounted) {
         setState(() {
-          _weatherData = weather;
-          _stickyAd = stickyAd;
-          _nativeAd = nativeAd;
-          _beaches = beaches;
           _isLoading = false;
         });
       }
@@ -104,6 +99,45 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           _isLoading = false;
         });
       }
+    }
+  }
+
+  void _applyForecast(ForecastMode mode, {bool updateState = true}) {
+    if (_weatherData == null) return;
+    
+    String key;
+    switch (mode) {
+      case ForecastMode.now:
+        key = 'now';
+        break;
+      case ForecastMode.hours6:
+        key = 'hours6';
+        break;
+      case ForecastMode.hours24:
+        key = 'hours24';
+        break;
+    }
+
+    final forecast = _weatherData![key] as Map<String, dynamic>;
+    final windSpeed = (forecast['windspeed'] as num).toDouble();
+    final windDirection = (forecast['winddirection'] as num).toDouble();
+
+    for (var beach in _beaches) {
+      beach.status = WindLogic.calculateStatus(
+        windSpeed,
+        windDirection,
+        beach,
+      );
+    }
+
+    _beaches.sort((a, b) => a.status.index.compareTo(b.status.index));
+
+    if (updateState && mounted) {
+      setState(() {
+        _currentForecastMode = mode;
+      });
+    } else {
+      _currentForecastMode = mode;
     }
   }
 
@@ -209,11 +243,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           SliverToBoxAdapter(
                             child: IslandMapWidget(
                               beaches: _beaches,
-                              windSpeed: (_weatherData!['windspeed'] as num)
-                                  .toDouble(),
-                              windDirection:
-                                  (_weatherData!['winddirection'] as num)
-                                      .toDouble(),
+                              weatherData: _weatherData!,
+                              currentMode: _currentForecastMode,
+                              onForecastModeChanged: (mode) {
+                                _applyForecast(mode);
+                              },
                               onBeachTap: _scrollToBeach,
                             ),
                           ),
